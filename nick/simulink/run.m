@@ -4,13 +4,13 @@ model = 'visualize';
 load_system(model);
 
 %% Define extra parameters for model
-par.initial_state = [pi+0.1 0]; % Pendulum is vertical (up up)
+par.initial_state = [0.5*pi 0.2*pi]; % Pendulum is vertical (up up)
 par.torque = 0; % Input torque
-par.sim_time = 5;
+par.sim_time = 100;
 par.torque_bypass = 1; % Set to 0 to filter torque
 
 % Controller parameters
-par.Kp = -1;
+par.Kp = 0 ;
 par.Kd = 0;
 par.Ki = 0;
 %% Initialize parameters and states
