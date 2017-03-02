@@ -5,7 +5,9 @@ file = 'Pendulum_model'
 open_system(file)
 states = [0 0 0 0 0]
 states = Simulink.BlockDiagram.getInitialState(file)
-theta1_0 = 0.5*pi; theta2_0 = -0.45*pi; theta1_dot_0 = 0; theta2_dot_0 = 0;
+% Specify the initial state using relative phi angles, output angle theta2
+% is global though! 
+theta1_0 = 0.5*pi; theta2_0 = 0.5*pi; theta1_dot_0 = 0; theta2_dot_0 = 0;
 states.signals(1).values = [theta1_0 theta2_0];
 states.signals(3).values = [theta1_dot_0 theta2_dot_0];
 states.signals(2).values = 0;

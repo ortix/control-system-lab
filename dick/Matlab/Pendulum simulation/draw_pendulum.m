@@ -17,9 +17,9 @@ set(gca,'nextplot','replacechildren');  %line to fresh each plot
 for i=1:length(theta1)-1
     if (ishandle(h1)==1) %check figure is plotting
         %x cordinate of mass 1 and 2 at current time step
-        Xcoord=[0,l1*sin(theta1(i)),l1*sin(theta1(i))+l2*sin(theta1(i)+theta2(i))];
+        Xcoord=[0,l1*sin(theta1(i)),l1*sin(theta1(i))+l2*sin(theta2(i))];
         %y cordinate of mass 1 and 2 at current time step
-        Ycoord=[0,l1*cos(theta1(i)),l1*cos(theta1(i))+l2*cos(theta1(i)+theta2(i))];
+        Ycoord=[0,l1*cos(theta1(i)),l1*cos(theta1(i))+l2*cos(theta2(i))];
         %update markers to reflect x and y cords
         set(h1,'XData',Xcoord,'YData',Ycoord);
         drawnow;
