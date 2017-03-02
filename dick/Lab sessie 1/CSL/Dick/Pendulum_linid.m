@@ -24,7 +24,7 @@ G = ss(A,B,C,D);
 % % design input excitation signal
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % T = 50;     % length of experiment
-% h = 0.1;    % sampling interval
+% h = 0.01;    % sampling interval
 % ts = 10;    % estimated settling time of the process
 % A = 0.1;    % amplitude of GBN
 % U = [h*(0:T/h)' gbn(T,ts,A,h,1)];
@@ -34,22 +34,25 @@ G = ss(A,B,C,D);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sim('Pendulum_model_linid');  % ouput data available in y
 U = U.data;
-y = y.data;
+y = y.data(:,1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % linear identification
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(1); clf;
 data = iddata(y,U,h);
-nb = [5;5]; nf = [5;5]; nk = [1;1];
+nb = [3]; nf = [5]; nk = [0];
 M = oe(data,[nb nf nk]); subplot(3,1,1); compare(data,M);
-na = [3 3; 3 3]; nc = [1;1];
+na = [5]; nc = [1];
 L = armax(data,[na nb nc nk]); subplot(3,1,2); compare(data,L);
-F = arx(data,[na nf nk]); subplot(3,1,3); compare(data,F);
+F = arx(data,[na nb nk]); subplot(3,1,3); compare(data,F);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % compare with linearized model
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure(2); clf;
-Ghat = ss(L); Ghat = Ghat(1,1);
+Ghat = ss(M); Ghat = Ghat(1,1);
+Lhat = ss(L); Lhat = Lhat(1,1);
+Fhat = ss(F); Fhat = Fhat(1,1);
 step(G,Ghat);
 tf(d2c(Ghat))
+tf(d2c(Lhat))
 tf(G)
