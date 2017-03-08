@@ -27,111 +27,61 @@ for i = 1:numel(fields)
   hws.assignin(fields{i},par.(fields{i}));
 end
 
-%% Tune system%% Design Requirements
-% Use |TuningGoal| requirements to specify the desired closed-loop behavior. 
-% Specify a response time of 3 seconds for tracking a setpoint change in 
-% cart position $x$.
+%% Linearization
+model = 'visualize';
 
-% Tracking of x command
-req1 = TuningGoal.Tracking('theta1_ref','theta1',3);
+%% Specify the analysis I/Os
+% Specify block name as the analysis I/Os
+% to linearize the block visualize/Simulation
+io = 'visualize/Simulation';
 
-%%
-% To adequately reject impulse disturbances $dF$ on the tip of
-% the pendulum, use an LQR penalty of the form
-%
-% $$ \int_0^\infty (16 \theta^2(t) + x^2(t) + 0.01 F^2(t)) dt $$
-%
-% that emphasizes a small angular deviation $\theta$ and limits the control effort $F$.
+%% Specify the operating point
+% Use the model initial condition
+op = operpoint(model);
 
-% Rejection of impulse disturbance
-Qxu = diag([16 1 0.1]);
-req2 = TuningGoal.LQG('Disturbance',{'theta2','theta1','Torque'},1,Qxu);
 
-%%
-% For robustness, require at least 6 dB of gain margin and 40 degrees
-% of phase margin at the plant input.
+%% Linearize the model
+sys = linearize(model,io,op);
 
-% Stability margins
-req3 = TuningGoal.Margins('Torque',6,40);
+%% Analysis
+% Find the poles
+poles = eig(sys.A);
 
-%%
-% Finally, constrain the damping and natural frequency of the closed-loop
-% poles to prevent jerky or underdamped transients.
+% Determine controlability
+co = ctrb(sys);
+controllability = rank(co)
 
-% Pole locations
-MinDamping = 0.5;
-MaxFrequency = 45;
-req4 = TuningGoal.Poles(0,MinDamping,MaxFrequency);
+% LQR Design
+Q = sys.C'*sys.C;
+Q(1,1) = 100;
+Q(2,2) = 500;
+R = 1;
+[K,~,e] = lqr(sys,Q,R)
 
-%% Control System Tuning
-% The closed-loop system is unstable for the initial values of the PD and
-% state-space controllers (1 and $2/s$, respectively). You can use
-% |systune| to jointly tune these two controllers. Use the |slTuner| 
-% interface to specify the tunable blocks and register the plant 
-% input |F| as an analysis point for measuring stability margins.
+% Find Nbar to eliminate steady state error
+Cn = [1 0 0 0]; % Only affect input of rotor
+sys_ss = ss(sys.A,sys.B,Cn,0);
+Nbar = rscale(sys_ss,K)
 
-ST0 = slTuner('visualize',{'Theta1 Controller','Angle Controller'});
-addPoint(ST0,'Torque');
+% Create new state space representation with full state feedback by
+% using K found with LQR
+Ac = [(sys.A-sys.B*K)];
+Bc = [sys.B];
+Cc = [sys.C];
+Dc = [sys.D];
 
-%%
-% Next, use |systune| to tune the PD and state-space controllers subject
-% to the performance requirements specified above. Optimize the
-% tracking and disturbance rejection performance (soft requirements)
-% subject to the stability margins and pole location constraints
-% (hard requirements).
+% Plot our results
+states = sys.StateName;
+inputs = {'torque'};
+outputs = {'theta1'; 'theta2'};
 
-rng(0)
-Options = systuneOptions('RandomStart',5);
-[ST, fSoft] = systune(ST0,[req1,req2],[req3,req4],Options);
-
-%%
-% The best design achieves a value close to 1 for the soft requirements
-% while satisfying the hard requirements (|Hard|<1). This means that
-% the tuned control system nearly achieves the target performance for
-% tracking and disturbance rejection while satisfying the stability margins 
-% and pole location constraints. 
-
-%% Validation
-% Use |viewSpec| to further analyze how the best design fares against each 
-% requirement.
-figure('Position',[100   100   575   660]);
-viewSpec([req1,req3,req4],ST)
-
-%%
-% These plots confirm that the first two requirements are nearly satisfied
-% while the last two are strictly enforced. Next, plot the responses to 
-% a step change in position and to a force impulse on the cart.
-
-T = getIOTransfer(ST,{'theta1_ref','Disturbance'},{'theta1','theta2'});
-figure('Position',[100   100   650   420]);
-subplot(121), step(T(:,1),10)
-title('Tracking of set point change in position')
-subplot(122), impulse(T(:,2),10)
-title('Rejection of impulse disturbance')
-
-%%
-% The responses are smooth with the desired settling times. Inspect the 
-% tuned values of the controllers.
-
-C1 = getBlockValue(ST,'Position Controller')
-
-%%
-
-C2 = zpk(getBlockValue(ST,'Angle Controller'))
-
-%%
-% Note that the angle controller has an unstable pole that pairs up with
-% the plant unstable pole to stabilize the inverted pendulum. To see this,
-% get the open-loop transfer at the plant input and plot the root locus.
-
-L = getLoopTransfer(ST,'Torque',-1);
-figure;
-rlocus(L)
-set(gca,'XLim',[-25 20],'YLim',[-20 20])
-
-%%
-% To complete the validation, upload the tuned values to Simulink and
-% simulate the nonlinear response of the cart/pendulum assembly.
-% A video of the resulting simulation appears below.
-
-writeBlockValue(ST)
+sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
+step(sys_cl)
+figure
+t = 0:0.01:5;
+r =0.2*ones(size(t));
+[y,t,x]=lsim(sys_cl,r,t);
+[AX,H1,H2] = plotyy(t,y(:,1),t,y(:,2),'plot');
+set(get(AX(1),'Ylabel'),'String','cart position (m)')
+set(get(AX(2),'Ylabel'),'String','pendulum angle (radians)')
+title('Step Response with Precompensation and LQR Control')
