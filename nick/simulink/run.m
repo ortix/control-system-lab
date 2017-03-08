@@ -27,6 +27,16 @@ for i = 1:numel(fields)
   hws.assignin(fields{i},par.(fields{i}));
 end
 
+%% Linear model
+load_system('linear_model');
+hws = get_param(bdroot, 'modelworkspace');
+hws.assignin('A',sys.A);
+hws.assignin('B',sys.B);
+hws.assignin('C',sys.C);
+hws.assignin('D',sys.D);
+
+return
+
 %% Linearization
 model = 'visualize';
 
