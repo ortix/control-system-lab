@@ -5,7 +5,7 @@ params;
 file = 'Pendulum_model_linearization';
 addpath('../')
 
-x0 = [pi;0;0;0]; % state at the operating point
+x0 = [0;0;0;0]; % state at the operating point
 states = x0;
 u0 = 0;
 % states = Simulink.BlockDiagram.getInitialState(file)
