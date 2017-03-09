@@ -5,23 +5,9 @@ params;
 file = 'Pendulum_model_linearization';
 addpath('../')
 
-x0 = [0;0;0;0]; % state at the operating point
+x0 = [pi;0;0;0]; % state at the operating point
 states = x0;
 u0 = 0;
-% states = Simulink.BlockDiagram.getInitialState(file)
-% theta1_0 = pi; theta2_0 = 0; theta1_dot_0 = 0; theta2_dot_0 = 0;
-% states.signals(1).values = [theta1_0 theta2_0];
-% states.signals(3).values = [theta1_dot_0 theta2_dot_0];
-% states.signals(2).values = 0;
-
-% %% Initialize parameters and states
-% hws = get_param(bdroot, 'modelworkspace');
-% 
-% % Load additional parameters into workspace
-% fields = fieldnames(par);
-% for i = 1:numel(fields)
-%   hws.assignin(fields{i},par.(fields{i}));
-% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % linearize nonlinear model around x0, u0
@@ -39,7 +25,29 @@ sys = linearize(model,op);
 
 %% Plot the resulting linearization
 % step(sys)
-G = ss(sys)
+G_no_torque = ss(sys);
+
+%% Linearize the system with the torque as a state
+file = 'Pendulum_model_linearization_torque';
+x0 = [pi;0;0;0;0]; % state at the operating point
+states = x0;
+u0 = 0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% linearize nonlinear model around x0, u0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Specify the model name
+select_input = 0;
+model = 'Pendulum_model_linearization_torque';
+
+%% Specify the operating point
+% Use the model initial condition
+op = operpoint(model);
+
+%% Linearize the model
+sys = linearize(model,op);
+
+G_with_torque = ss(sys)
 return
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % design input excitation signal
