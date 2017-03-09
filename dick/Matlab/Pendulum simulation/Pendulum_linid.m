@@ -65,29 +65,29 @@ select_input = 1;
 sim('Pendulum_model_linid');  % ouput data available in y
 U = U(:,2);
 y = y.data(:,2);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% linear identification
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(1); clf;
-data = iddata(y,U,h);
-nb = [4]; nf = [5]; nk = [1];
-M = oe(data,[nb nf nk]); subplot(3,1,1); compare(data,M);
-na = [5]; nc = [1];
-L = armax(data,[na nb nc nk]); subplot(3,1,2); compare(data,L);
-% F = arx(data,[na nb nk]); subplot(3,1,3); compare(data,F);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% compare with linearized model
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure(2); clf;
-Ghat = ss(M); Ghat = Ghat(1,1);
-Lhat = ss(L); Lhat = Lhat(1,1);
-figure(3)
-step(G_with_torque,Ghat);
-figure(4)
-step(G_with_torque,Lhat);
-H11= tf(d2c(Ghat))
-H12= tf(d2c(Lhat))
-tf(G_with_torque)
-% 
-% % Obtaining the total transfer function 
-H_sys = [H11; H12]
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % linear identification
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure(1); clf;
+% data = iddata(y,U,h);
+% nb = [4]; nf = [5]; nk = [1];
+% M = oe(data,[nb nf nk]); subplot(3,1,1); compare(data,M);
+% na = [5]; nc = [1];
+% L = armax(data,[na nb nc nk]); subplot(3,1,2); compare(data,L);
+% % F = arx(data,[na nb nk]); subplot(3,1,3); compare(data,F);
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % compare with linearized model
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% figure(2); clf;
+% Ghat = ss(M); Ghat = Ghat(1,1);
+% Lhat = ss(L); Lhat = Lhat(1,1);
+% figure(3)
+% step(G_with_torque,Ghat);
+% figure(4)
+% step(G_with_torque,Lhat);
+% H11= tf(d2c(Ghat))
+% H12= tf(d2c(Lhat))
+% tf(G_with_torque)
+% % 
+% % % Obtaining the total transfer function 
+% H_sys = [H11; H12];
