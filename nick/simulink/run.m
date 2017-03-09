@@ -51,7 +51,13 @@ op = operpoint(model);
 
 
 % Linearize the model
-sys = linearize(model,io,op);
+sys_cont = linearize(model,io,op);
+
+% Discretize the model
+
+Ts = 1/100; 
+sys = c2d(sys_cont,Ts,'zoh')
+% sys=sys_cont;
 
 %% LQR Pole Placement
 % Find the poles
@@ -61,17 +67,18 @@ poles = eig(sys.A);
 co = ctrb(sys);
 controllability = rank(co)
 
-% LQR Design
+% LQR Designsys
 Q(1,1) = 10; % theta1
 Q(2,2) = 50;
 Q(3,3) = 10; % theta1_d
+Q(4,4) = 1;
 R = 0.1;
-[K,~,e] = lqr(sys,Q,R)
+[K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
-% Find Nbar to eliminate steady state error
-Cn = [1 0 0 0]; % Only affect input of rotor
-sys_ss = ss(sys.A,sys.B,Cn,0);
-Nbar = rscale(sys_ss,K)
+% % Find Nbar to eliminate steady state error
+% Cn = [1 0 0 0]; % Only affect input of rotor
+% sys_ss = ss(sys.A,sys.B,Cn,0);
+% Nbar = rscale(sys_ss,K)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -85,7 +92,7 @@ states = sys.StateName;
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
-sys_cl = ss(Ac,Bc,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
+sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 impulse(sys_cl)
 
 %% Observer
@@ -108,5 +115,6 @@ states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'e1' 'e2' 'e3' 'e4'};
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
-sys_est_cl = ss(Ace,Bce,Cce,Dce,'statename',states,'inputname',inputs,'outputname',outputs);
-
+sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
+hold on
+impulse(sys_est_cl)
