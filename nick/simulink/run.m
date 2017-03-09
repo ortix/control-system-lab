@@ -1,14 +1,17 @@
 %%% Rotational Pendulum
+clear;clc;
 %% Open up the system
 model = 'visualize';
 load_system(model);
 
 %% Define extra parameters for model
-par.initial_state = [0 0]; % Pendulum is vertical (up up)
+par.initial_state = [pi 0]; % Pendulum is vertical (up up)
 par.torque = 0; % Input torque
 par.sim_time = 100;
-par.torque_bypass = 1; % Set to 0 to filter torque
-
+par.torque_bypass = 0; % Set to 0 to filter torque
+Ts = 1/100;
+par.Ts = Ts;    
+par.h = Ts;
 % Controller parameters
 par.Kp = 0 ;
 par.Kd = 0;
@@ -35,7 +38,6 @@ end
 % hws.assignin('C',sys.C);
 % hws.assignin('D',sys.D);
 % 
-% return
 
 %% Linearization
 model = 'visualize';
@@ -51,34 +53,28 @@ op = operpoint(model);
 
 
 % Linearize the model
-sys_cont = linearize(model,io,op);
+sys_cont = linearize(model,io,op)
 
 % Discretize the model
-
-Ts = 1/100; 
 sys = c2d(sys_cont,Ts,'zoh')
-% sys=sys_cont;
+% sys=sys_cont
 
 %% LQR Pole Placement
 % Find the poles
-poles = eig(sys.A);
+clf
+poles = eig(sys.A)
 
 % Determine controlability
 co = ctrb(sys);
 controllability = rank(co)
-
 % LQR Designsys
-Q(1,1) = 10; % theta1
-Q(2,2) = 50;
-Q(3,3) = 10; % theta1_d
-Q(4,4) = 1;
-R = 0.1;
-[K,~,e] = dlqr(sys.A,sys.B,Q,R)
+Q = sys.C'*sys.C
 
-% % Find Nbar to eliminate steady state error
-% Cn = [1 0 0 0]; % Only affect input of rotor
-% sys_ss = ss(sys.A,sys.B,Cn,0);
-% Nbar = rscale(sys_ss,K)
+%%%%% Optimize this %%%%%%%%%%
+% Q(2,2) = 1; %theta1
+% Q(3,3) = 1; %theta2
+R = 0.001;
+[K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -92,17 +88,20 @@ states = sys.StateName;
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
-sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
+%Precompensator
+Nbar = 1;
+
+sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 impulse(sys_cl)
 
 %% Observer
 observability = rank(obsv(sys))
 
 % Check stability of system with state feedback
-poles = eig(sys)
-
+poles = eig(sys_cl)
+slowest = real(max(poles))/5;
 % Place the poles
-P = [-7952 -10 -11 -12];
+P = [slowest slowest+0.01 slowest+0.02 slowest+0.03 slowest+0.04];
 L = place(sys.A',sys.C',P)'
 
 % Controller
@@ -111,10 +110,29 @@ Bce = [sys.B; zeros(size(sys.B))];
 Cce = [Cc zeros(size(Cc))];
 Dce = [0;0];
 
-states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'e1' 'e2' 'e3' 'e4'};
+states = {'T_dot' 'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
 sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 hold on
 impulse(sys_est_cl)
+
+%% Save the state matrices
+state.A = sys.a;
+state.B = sys.b;
+state.C = sys.c;
+state.D = sys.d;
+state.K = K;
+state.L = L;
+state.h = Ts
+
+%% Save the params to the model
+addpath('plant');
+open_system('rpend');
+simh = get_param(bdroot, 'modelworkspace');
+
+fields = fieldnames(state);
+for i = 1:numel(fields)
+  simh.assignin(fields{i},state.(fields{i}));
+end
