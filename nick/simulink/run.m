@@ -27,33 +27,33 @@ for i = 1:numel(fields)
   hws.assignin(fields{i},par.(fields{i}));
 end
 
-%% Linear model
-load_system('linear_model');
-hws = get_param(bdroot, 'modelworkspace');
-hws.assignin('A',sys.A);
-hws.assignin('B',sys.B);
-hws.assignin('C',sys.C);
-hws.assignin('D',sys.D);
-
-return
+% %% Linear model
+% load_system('linear_model');
+% hws = get_param(bdroot, 'modelworkspace');
+% hws.assignin('A',sys.A);
+% hws.assignin('B',sys.B);
+% hws.assignin('C',sys.C);
+% hws.assignin('D',sys.D);
+% 
+% return
 
 %% Linearization
 model = 'visualize';
 
-%% Specify the analysis I/Os
+% Specify the analysis I/Os
 % Specify block name as the analysis I/Os
 % to linearize the block visualize/Simulation
 io = 'visualize/Simulation';
 
-%% Specify the operating point
+% Specify the operating point
 % Use the model initial condition
 op = operpoint(model);
 
 
-%% Linearize the model
+% Linearize the model
 sys = linearize(model,io,op);
 
-%% Analysis
+%% LQR Pole Placement
 % Find the poles
 poles = eig(sys.A);
 
@@ -62,10 +62,10 @@ co = ctrb(sys);
 controllability = rank(co)
 
 % LQR Design
-Q = sys.C'*sys.C;
-Q(1,1) = 100;
-Q(2,2) = 500;
-R = 1;
+Q(1,1) = 10; % theta1
+Q(2,2) = 50;
+Q(3,3) = 10; % theta1_d
+R = 0.1;
 [K,~,e] = lqr(sys,Q,R)
 
 % Find Nbar to eliminate steady state error
@@ -85,13 +85,28 @@ states = sys.StateName;
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
-sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
-step(sys_cl)
-figure
-t = 0:0.01:5;
-r =0.2*ones(size(t));
-[y,t,x]=lsim(sys_cl,r,t);
-[AX,H1,H2] = plotyy(t,y(:,1),t,y(:,2),'plot');
-set(get(AX(1),'Ylabel'),'String','cart position (m)')
-set(get(AX(2),'Ylabel'),'String','pendulum angle (radians)')
-title('Step Response with Precompensation and LQR Control')
+sys_cl = ss(Ac,Bc,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
+impulse(sys_cl)
+
+%% Observer
+observability = rank(obsv(sys))
+
+% Check stability of system with state feedback
+poles = eig(sys)
+
+% Place the poles
+P = [-7952 -10 -11 -12];
+L = place(sys.A',sys.C',P)'
+
+% Controller
+Ace = [(sys.A-sys.B*K) (sys.B*K); zeros(size(sys.A)) (sys.A-L*sys.C)];
+Bce = [sys.B; zeros(size(sys.B))];
+Cce = [Cc zeros(size(Cc))];
+Dce = [0;0];
+
+states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'e1' 'e2' 'e3' 'e4'};
+inputs = {'torque'};
+outputs = {'theta1'; 'theta2'};
+
+sys_est_cl = ss(Ace,Bce,Cce,Dce,'statename',states,'inputname',inputs,'outputname',outputs);
+
