@@ -5,11 +5,11 @@ model = 'visualize';
 load_system(model);
 
 %% Define extra parameters for model
-par.initial_state = [pi 0]; % Pendulum is vertical (up up)
+par.initial_state = [0 0]; % Pendulum is vertical (up up)
 par.torque = 0; % Input torque
 par.sim_time = 100;
 par.torque_bypass = 0; % Set to 0 to filter torque
-Ts = 1/100;
+Ts = 1/1000;
 par.Ts = Ts;    
 par.h = Ts;
 % Controller parameters
@@ -40,25 +40,27 @@ end
 % 
 
 %% Linearization
-model = 'visualize';
+% model = 'visualize';
+% 
+% % Specify the analysis I/Os
+% % Specify block name as the analysis I/Os
+% % to linearize the block visualize/Simulation
+% io = 'visualize/Simulation';
+% 
+% % Specify the operating point
+% % Use the model initial condition
+% op = operpoint(model);
+% 
+% 
+% % Linearize the model
+% sys_cont = linearize(model,io,op)
+% 
+% % Discretize the model
+% sys = c2d(sys_cont,Ts,'zoh')
+% % sys=sys_cont
 
-% Specify the analysis I/Os
-% Specify block name as the analysis I/Os
-% to linearize the block visualize/Simulation
-io = 'visualize/Simulation';
-
-% Specify the operating point
-% Use the model initial condition
-op = operpoint(model);
-
-
-% Linearize the model
-sys_cont = linearize(model,io,op)
-
-% Discretize the model
-sys = c2d(sys_cont,Ts,'zoh')
-% sys=sys_cont
-
+sys_cont = getLinearModel(par.initial_state)
+sys = c2d(sys_cont,Ts,'zoh');
 %% LQR Pole Placement
 % Find the poles
 clf
@@ -71,9 +73,10 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-% Q(2,2) = 1; %theta1
-% Q(3,3) = 1; %theta2
-R = 0.001;
+Q(1,1) = 1; %theta1
+Q(2,2) = 1; %theta2
+Q = diag([500 1000 0 0 0])
+R = 1;
 [K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
@@ -99,7 +102,7 @@ observability = rank(obsv(sys))
 
 % Check stability of system with state feedback
 poles = eig(sys_cl)
-slowest = real(max(poles))/5;
+slowest = real(max(poles))/10;
 % Place the poles
 P = [slowest slowest+0.01 slowest+0.02 slowest+0.03 slowest+0.04];
 L = place(sys.A',sys.C',P)'
@@ -115,9 +118,16 @@ inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
 sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
-hold on
-impulse(sys_est_cl)
 
+%% Simulate
+% t = 0:Ts:5;
+% r = 0.1*ones(size(t));
+% [y,t,x]=lsim(sys_est_cl,r,t);
+% [AX,H1,H2] = plotyy(t,y(:,1),t,y(:,2),'plot');
+% set(get(AX(1),'Ylabel'),'String','Torque')
+% set(get(AX(2),'Ylabel'),'String','pendulum angle (radians)')
+% title('Step Response with Observer-Based State-Feedback Control')
+% grid on
 %% Save the state matrices
 state.A = sys.a;
 state.B = sys.b;
