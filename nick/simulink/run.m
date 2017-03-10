@@ -40,30 +40,30 @@ end
 % 
 
 %% Linearization
-model = 'visualize';
-
-% Specify the analysis I/Os
-% Specify block name as the analysis I/Os
-% to linearize the block visualize/Simulation
-io = 'visualize/Simulation';
-
-% Specify the operating point
-% Use the model initial condition
-op = operpoint(model);
-
-
-% Linearize the model
-sys_cont = linearize(model,io,op)
-
-% Discretize the model
-sys_disc = c2d(sys_cont,Ts,'zoh');
+% model = 'visualize';
+% 
+% % Specify the analysis I/Os
+% % Specify block name as the analysis I/Os
+% % to linearize the block visualize/Simulation
+% io = 'visualize/Simulation';
+% 
+% % Specify the operating point
+% % Use the model initial condition
+% op = operpoint(model);
+% 
+% 
+% % Linearize the model
+% sys_cont = linearize(model,io,op)
+% 
+% % Discretize the model
+% sys_disc = c2d(sys_cont,Ts,'zoh');
 
 % Analytical linearization
 sys_analytical = getLinearModel(params.initial_state)
 sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
 
 % Pick the system we want to use
-sys = sys_analytical;
+sys = sys_anl_disc;
 
 %% LQR Pole Placement
 % Find the poles
@@ -77,11 +77,10 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q(1,1) = 1; %theta1
-Q(2,2) = 1; %theta2
-Q = diag([1 1 1 1 0])
+Q = diag([0.75 4 0 0 0])
 R = 1;
-[K,~,e] = lqr(sys.A,sys.B,Q,R)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -106,11 +105,11 @@ observability = rank(obsv(sys))
 
 % Check stability of system with state feedback
 poles = eig(sys_cl)
-slowest = real(max(poles))/10;
+lambda = real(max(poles))/5;
 
 % Place the poles
-P = [slowest slowest+1 slowest+2 slowest+3 slowest+4];
-L = place(sys.A',sys.C',P)'
+P = [lambda lambda-0.01 lambda-0.02 lambda-0.03 lambda-0.04];
+L = place(sys.A.',sys.C.',P).'
 
 % Controller
 Ace = [(sys.A-sys.B*K) (sys.B*K); zeros(size(sys.A)) (sys.A-L*sys.C)];
@@ -118,7 +117,7 @@ Bce = [sys.B; zeros(size(sys.B))];
 Cce = [Cc zeros(size(Cc))];
 Dce = [0;0];
 
-states = {'T_dot' 'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
+states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'T_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
