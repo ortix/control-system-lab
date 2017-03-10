@@ -50,22 +50,22 @@ sys = linearize(model,op);
 G_with_torque = ss(sys)
 clearvars -except G_with_torque
 return
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % design input excitation signal
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% T = 10;     % length of experiment
+% h = 0.01;    % sampling interval
+% ts = 0.1;    % estimated settling time of the process
+% A = 0.1;    % amplitude of GBN
+% U = [h*(0:T/h)' gbn(T,ts,A,h,1)];
+% 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % design input excitation signal
+% % data collection
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-T = 10;     % length of experiment
-h = 0.01;    % sampling interval
-ts = 0.1;    % estimated settling time of the process
-A = 0.1;    % amplitude of GBN
-U = [h*(0:T/h)' gbn(T,ts,A,h,1)];
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% data collection
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-select_input = 1;
-sim('Pendulum_model_linid');  % ouput data available in y
-U = U(:,2);
-y = y.data(:,2);
+% select_input = 1;
+% sim('Pendulum_model_linid');  % ouput data available in y
+% U = U(:,2);
+% y = y.data(:,2);
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % linear identification
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
