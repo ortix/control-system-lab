@@ -14,7 +14,8 @@ title('Pendulum Animation')
 xlabel('x displacement'); ylabel('y displacement');
 set(gca,'nextplot','replacechildren');  %line to fresh each plot
 
-for i=1:length(theta1)-1
+dt = 100; % set the speed of the visualization by changing dt
+for i=1:dt:length(theta1) 
     if (ishandle(h1)==1) %check figure is plotting
         %x cordinate of mass 1 and 2 at current time step
         Xcoord=[0,l1*sin(theta1(i)),l1*sin(theta1(i))+l2*sin(theta2(i))];
@@ -25,5 +26,5 @@ for i=1:length(theta1)-1
         drawnow;
         %get current figure (gcf) and save to the movie 'F'
     end
-    F(i) = getframe(gcf);
+    % F(i) = getframe(gcf);
 end

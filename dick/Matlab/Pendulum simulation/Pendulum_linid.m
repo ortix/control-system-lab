@@ -29,9 +29,9 @@ G_no_torque = ss(sys);
 
 %% Linearize the system with the torque as a state
 file = 'Pendulum_model_linearization_torque';
-x0 = [pi;0;0;0;0]; % state at the operating point
+x0 = [0;0;0;0;0]; % state at the operating point
 states = x0;
-u0 = 0
+u0 = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % linearize nonlinear model around x0, u0
@@ -48,7 +48,8 @@ op = operpoint(model);
 sys = linearize(model,op);
 
 G_with_torque = ss(sys)
-
+clearvars -except G_with_torque
+return
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % design input excitation signal
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
