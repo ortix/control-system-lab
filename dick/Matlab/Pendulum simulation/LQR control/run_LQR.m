@@ -40,8 +40,12 @@ N = [0;0;0;0;0];
 %% Running the simulink model
 file = 'LQR_control_model'
 
-states = [0 0 0 0 0];
+states_sys = [0 0 0 0 0];
+states_visualizer = [0 0 0 0 0 0];
+states = [states_sys states_visualizer];
 states = Simulink.BlockDiagram.getInitialState(file)
+x0 = [0 0.1 0 0 0]
+states.signals(5).values = x0;
 
 t1 = 100;
 error = 1e-3;

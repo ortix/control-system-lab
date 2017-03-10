@@ -20,3 +20,4 @@ octave-workspace
 
 # Simulink autosave extension
 *.autosave
+nick/simulink/visualize.slx
