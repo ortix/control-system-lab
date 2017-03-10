@@ -5,17 +5,17 @@ model = 'visualize';
 load_system(model);
 
 %% Define extra parameters for model
-par.initial_state = [0 0]; % Pendulum is vertical (up up)
-par.torque = 0; % Input torque
-par.sim_time = 100;
-par.torque_bypass = 0; % Set to 0 to filter torque
+params.initial_state = [0 0]; % Pendulum is vertical (up up)
+params.torque = 0; % Input torque
+params.sim_time = 10;
+params.torque_bypass = 0; % Set to 0 to filter torque
 Ts = 1/1000;
-par.Ts = Ts;    
-par.h = Ts;
+params.Ts = Ts;    
+params.h = Ts;
 % Controller parameters
-par.Kp = 0 ;
-par.Kd = 0;
-par.Ki = 0;
+params.Kp = 0 ;
+params.Kd = 0;
+params.Ki = 0;
 %% Initialize parameters and states
 hws = get_param(bdroot, 'modelworkspace');
 
@@ -25,9 +25,9 @@ hws.FileName = 'par_struct.m';
 hws.reload;
 
 % Load additional parameters into workspace
-fields = fieldnames(par);
+fields = fieldnames(params);
 for i = 1:numel(fields)
-  hws.assignin(fields{i},par.(fields{i}));
+  hws.assignin(fields{i},params.(fields{i}));
 end
 
 % %% Linear model
@@ -40,27 +40,31 @@ end
 % 
 
 %% Linearization
-% model = 'visualize';
-% 
-% % Specify the analysis I/Os
-% % Specify block name as the analysis I/Os
-% % to linearize the block visualize/Simulation
-% io = 'visualize/Simulation';
-% 
-% % Specify the operating point
-% % Use the model initial condition
-% op = operpoint(model);
-% 
-% 
-% % Linearize the model
-% sys_cont = linearize(model,io,op)
-% 
-% % Discretize the model
-% sys = c2d(sys_cont,Ts,'zoh')
-% % sys=sys_cont
+model = 'visualize';
 
-sys_cont = getLinearModel(par.initial_state)
-sys = c2d(sys_cont,Ts,'zoh');
+% Specify the analysis I/Os
+% Specify block name as the analysis I/Os
+% to linearize the block visualize/Simulation
+io = 'visualize/Simulation';
+
+% Specify the operating point
+% Use the model initial condition
+op = operpoint(model);
+
+
+% Linearize the model
+sys_cont = linearize(model,io,op)
+
+% Discretize the model
+sys_disc = c2d(sys_cont,Ts,'zoh');
+
+% Analytical linearization
+sys_analytical = getLinearModel(params.initial_state)
+sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
+
+% Pick the system we want to use
+sys = sys_analytical;
+
 %% LQR Pole Placement
 % Find the poles
 clf
@@ -75,9 +79,9 @@ Q = sys.C'*sys.C
 %%%%% Optimize this %%%%%%%%%%
 Q(1,1) = 1; %theta1
 Q(2,2) = 1; %theta2
-Q = diag([500 1000 0 0 0])
+Q = diag([1 1 1 1 0])
 R = 1;
-[K,~,e] = dlqr(sys.A,sys.B,Q,R)
+[K,~,e] = lqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -103,8 +107,9 @@ observability = rank(obsv(sys))
 % Check stability of system with state feedback
 poles = eig(sys_cl)
 slowest = real(max(poles))/10;
+
 % Place the poles
-P = [slowest slowest+0.01 slowest+0.02 slowest+0.03 slowest+0.04];
+P = [slowest slowest+1 slowest+2 slowest+3 slowest+4];
 L = place(sys.A',sys.C',P)'
 
 % Controller
@@ -137,12 +142,14 @@ state.K = K;
 state.L = L;
 state.h = Ts
 
-%% Save the params to the model
-addpath('plant');
-open_system('rpend');
-simh = get_param(bdroot, 'modelworkspace');
+toModelWorkspace(model,state);
 
-fields = fieldnames(state);
-for i = 1:numel(fields)
-  simh.assignin(fields{i},state.(fields{i}));
-end
+% %% Save the params to the model
+% addpath('plant');
+% open_system('rpend');
+% simh = get_param(bdroot, 'modelworkspace');
+% 
+% fields = fieldnames(state);
+% for i = 1:numel(fields)
+%   simh.assignin(fields{i},state.(fields{i}));
+% end
