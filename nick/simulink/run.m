@@ -9,7 +9,7 @@ params.initial_state = [0 0]; % Pendulum is vertical (up up)
 params.torque = 0; % Input torque
 params.sim_time = 10;
 params.torque_bypass = 0; % Set to 0 to filter torque
-Ts = 1/1000;
+Ts = 1/500;
 params.Ts = Ts;    
 params.h = Ts;
 % Controller parameters
@@ -43,8 +43,13 @@ model = 'model_v2';
 % Use the model initial condition
 op = operpoint(model);
 
+% Create the analysis I/O variable IOs1
+io(1) = linio('model_v2/Torque_in',1,'input');
+io(2) = linio('model_v2/Demux',1,'output');
+io(3) = linio('model_v2/Demux',2,'output');
+
 % Linearize the model
-sys_cont = linearize(model,op)
+sys_cont = linearize(model,op,io)
 
 % Discretize the model
 sys_disc = c2d(sys_cont,Ts,'zoh');
