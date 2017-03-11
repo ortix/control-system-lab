@@ -3,7 +3,7 @@ function toModelWorkspace(model,data)
 % Data is a struct with fields corresponding
 % to the variables to be stored
 load_system(model)
-hws = get_param(bdroot, 'modelworkspace');
+hws = get_param(model, 'modelworkspace');
 
 
 % Load additional parameters into workspace

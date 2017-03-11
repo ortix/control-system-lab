@@ -24,11 +24,8 @@ hws.DataSource = 'Matlab File';
 hws.FileName = 'par_struct.m';
 hws.reload;
 
-% Load additional parameters into workspace
-fields = fieldnames(params);
-for i = 1:numel(fields)
-  hws.assignin(fields{i},params.(fields{i}));
-end
+toModelWorkspace('visualize',params);
+toModelWorkspace('model_v2',params);
 
 % %% Linear model
 % load_system('linear_model');
@@ -40,30 +37,24 @@ end
 % 
 
 %% Linearization
-% model = 'visualize';
-% 
-% % Specify the analysis I/Os
-% % Specify block name as the analysis I/Os
-% % to linearize the block visualize/Simulation
-% io = 'visualize/Simulation';
-% 
-% % Specify the operating point
-% % Use the model initial condition
-% op = operpoint(model);
-% 
-% 
-% % Linearize the model
-% sys_cont = linearize(model,io,op)
-% 
-% % Discretize the model
-% sys_disc = c2d(sys_cont,Ts,'zoh');
+model = 'model_v2';
+
+% Specify the operating point
+% Use the model initial condition
+op = operpoint(model);
+
+% Linearize the model
+sys_cont = linearize(model,op)
+
+% Discretize the model
+sys_disc = c2d(sys_cont,Ts,'zoh');
 
 % Analytical linearization
 sys_analytical = getLinearModel(params.initial_state)
 sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
 
 % Pick the system we want to use
-sys = sys_anl_disc;
+sys = sys_cont;
 
 %% LQR Pole Placement
 % Find the poles
@@ -77,10 +68,10 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([0.75 4 0 0 0])
+Q = diag([1 1 9000 0 0])
 R = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[K,~,e] = dlqr(sys.A,sys.B,Q,R)
+[K,~,e] = lqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -97,8 +88,8 @@ outputs = {'theta1'; 'theta2'};
 %Precompensator
 Nbar = 1;
 
-sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
-impulse(sys_cl)
+sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
+step(sys_cl)
 
 %% Observer
 observability = rank(obsv(sys))
@@ -108,7 +99,7 @@ poles = eig(sys_cl)
 lambda = real(max(poles))/5;
 
 % Place the poles
-P = [lambda lambda-0.01 lambda-0.02 lambda-0.03 lambda-0.04];
+P = [lambda lambda-1 lambda-2 lambda-3 lambda-4];
 L = place(sys.A.',sys.C.',P).'
 
 % Controller
@@ -141,7 +132,7 @@ state.K = K;
 state.L = L;
 state.h = Ts
 
-toModelWorkspace(model,state);
+toModelWorkspace('visualize',state);
 
 % %% Save the params to the model
 % addpath('plant');
