@@ -73,7 +73,7 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([1 1 9000 0 0])
+Q = diag([1 1 8000 0 0.5])
 R = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [K,~,e] = lqr(sys.A,sys.B,Q,R)
@@ -94,14 +94,14 @@ outputs = {'theta1'; 'theta2'};
 Nbar = 1;
 
 sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
-step(sys_cl)
+impulse(sys_cl)
 
 %% Observer
 observability = rank(obsv(sys))
 
 % Check stability of system with state feedback
 poles = eig(sys_cl)
-lambda = real(max(poles))/5;
+lambda = real(max(poles))/10;
 
 % Place the poles
 P = [lambda lambda-1 lambda-2 lambda-3 lambda-4];
@@ -117,7 +117,7 @@ states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'T_dot' 'e1' 'e2' 'e3' 'e4
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
-sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
+sys_est_cl = ss(Ace,Bce,Cce,Dce,'statename',states,'inputname',inputs,'outputname',outputs);
 
 %% Simulate
 % t = 0:Ts:5;
