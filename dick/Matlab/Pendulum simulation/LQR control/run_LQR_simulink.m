@@ -18,7 +18,7 @@ hwinit
 calib
 
 params;
-h = 0.01;
+h = 0.002;
 
 if ~exist('sysd1')
     discr_sys = c2d(G,h);
