@@ -2,10 +2,10 @@
 
 % Creating a multisine signal as used in SIPE
 % Specifing parameters
-A = 0.3;        % Amplification of the input signal
-T_end = 10;     % end time of simulation
+A = 0.1;        % Amplification of the input signal
+T_end = 50;     % end time of simulation
 fs = 100;       % sampling frequency
-fcut = 40;      % cutoff frequency for multisine signal
+fcut = 5;      % cutoff frequency for multisine signal
 dt = 1/fs;
 N = T_end/dt;
 Nseg = N/10;
@@ -13,7 +13,7 @@ t = (0:N-1).'*dt; % time vector
 
 % Random phase multisine signal from 0 to fcut 
 fv = (0:Nseg-1)'/Nseg*fs;                % Make a new frequency for the shorter Multisine FFT 
-P  = 10;                                 % Amount of periods (10 of 20 seconds)
+P  = 10;                                  % Amount of periods (10 of 20 seconds)
 Tm = T_end./P;                           % Duration of 1 period
 freqv=1/Tm:1/Tm:fcut;                    % array of frequencies
 cx=exp(1j*rand(length(freqv),1)*2*pi);   % amplitude and phase in freq domain
