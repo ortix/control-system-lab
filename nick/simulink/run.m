@@ -73,7 +73,7 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([1 10000 9000 1 0.5])
+Q = diag([0.1 10000 90000 0 0])
 R = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [K,~,e] = dlqr(sys.A,sys.B,Q,R)
@@ -136,13 +136,13 @@ impulse(sys_obs)
 
 %% Save the state matrices
 % Some fine tuning
-L(1,:) = L(1,:)/10000
+% L(1,:) = L(1,:)/10000
 
 state.A = sys.a;
 state.B = sys.b;
 state.C = sys.c;
 state.D = sys.d;
-state.K = K;
+state.K = K./5;
 state.L = L;
 state.h = Ts
 
