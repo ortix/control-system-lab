@@ -9,7 +9,7 @@ params.initial_state = [0 0]; % Pendulum is vertical (up up)
 params.torque = 0; % Input torque
 params.sim_time = 10;
 params.torque_bypass = 0; % Set to 0 to filter torque
-Ts = 1/500;
+Ts = 1/5000;
 params.Ts = Ts;    
 params.h = Ts;
 % Controller parameters
@@ -49,14 +49,14 @@ io(2) = linio('model_v2/Demux',1,'output');
 io(3) = linio('model_v2/Demux',2,'output');
 
 % Linearize the model
-sys_cont = linearize(model,op,io)
+sys_disc = linearize(model,op,io)
 
 % Discretize the model
-sys_disc = c2d(sys_cont,Ts,'zoh');
+% sys_disc = c2d(sys_cont,Ts,'zoh');
 
 % Analytical linearization
-sys_analytical = getLinearModel(params.initial_state)
-sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
+% sys_analytical = getLinearModel(params.initial_state)
+% sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
 
 % Pick the system we want to use
 sys = sys_disc;
@@ -73,8 +73,8 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([1 1 9000 0 0.5])
-R = 0.1;
+Q = diag([1 10000 9000 1 0.5])
+R = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
@@ -94,17 +94,17 @@ outputs = {'theta1'; 'theta2'};
 Nbar = 1;
 
 sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
-step(sys_cl)
+impulse(sys_cl)
 
 %% Observer
 observability = rank(obsv(sys))
 
 % Check stability of system with state feedback
 poles = eig(sys_cl)
-lambda = -abs(real(max(poles))/10);
+lambda = 0.1;
 
 % Place the poles
-P = [lambda lambda-0.01 lambda-0.02 lambda-0.03 lambda-0.04];
+P = [0.9 0.12 0.13 0.14 0.15];
 L = place(sys.A.',sys.C.',P).'
 
 % Controller
@@ -113,13 +113,17 @@ Bce = [sys.B; zeros(size(sys.B))];
 Cce = [Cc zeros(size(Cc))];
 Dce = [0;0];
 
+sys_obs = ss(sys.A-L*sys.C,sys.B,sys.C,sys.D,Ts);
+
+
 states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'T_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
 inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
 sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 
-step(sys_est_cl)
+impulse(sys_est_cl)
+impulse(sys_obs)
 %% Simulate
 % t = 0:Ts:5;
 % r = 0.1*ones(size(t));
@@ -129,7 +133,11 @@ step(sys_est_cl)
 % set(get(AX(2),'Ylabel'),'String','pendulum angle (radians)')
 % title('Step Response with Observer-Based State-Feedback Control')
 % grid on
+
 %% Save the state matrices
+% Some fine tuning
+L(1,:) = L(1,:)/10000
+
 state.A = sys.a;
 state.B = sys.b;
 state.C = sys.c;
