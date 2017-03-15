@@ -137,14 +137,15 @@ grid on
 %% Save the state matrices
 % Some fine tuning
 % L(1,:) = L(1,:)/10000
-
+sys = c2d(sys,Ts,'zoh');
 state.A = sys.a;
 state.B = sys.b;
 state.C = sys.c;
 state.D = sys.d;
 state.K = K;
 % state.L = L;
-state.h = Ts
+state.h = Ts;
+state.Ts = Ts;
 
 toModelWorkspace('visualize',state);
 addpath('plant')
