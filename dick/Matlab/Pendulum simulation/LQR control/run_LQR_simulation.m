@@ -30,7 +30,7 @@ e = eig(discr_sys);
 
 %% Creating the feedback gains by use of LQR
 Q = diag([15 8000 1 0.5 1]);          % Input of system is [theta1 theta2 theta1dot theta2dot torque] Nick: [1 1 8000 0 0.5]
-R = 1;                              % Nick: R = 1
+R = 1;                                % Nick: R = 1
 N = [0;0;0;0;0];
 
 % Compute the feedback gain K based on A, B, Q, R and N in discrete time
