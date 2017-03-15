@@ -29,7 +29,7 @@ G_no_torque = ss(sys);
 
 %% Linearize the system with the torque as a state
 file = 'Pendulum_model_linearization_torque';
-x0 = [0;0;0;0;0]; % state at the operating point
+x0 = [pi;0;0;0;0]; % state at the operating point
 states = x0;
 u0 = 0;
 
