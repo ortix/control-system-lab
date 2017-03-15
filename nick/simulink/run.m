@@ -9,7 +9,7 @@ params.initial_state = [0 0]; % Pendulum is vertical (up up)
 params.torque = 0; % Input torque
 params.sim_time = 10;
 params.torque_bypass = 0; % Set to 0 to filter torque
-Ts = 1/5000;
+Ts = 1/100;
 params.Ts = Ts;    
 params.h = Ts;
 % Controller parameters
@@ -49,7 +49,7 @@ io(2) = linio('model_v2/Demux',1,'output');
 io(3) = linio('model_v2/Demux',2,'output');
 
 % Linearize the model
-sys_disc = linearize(model,op,io)
+sys = linearize(model,op,io)
 
 % Discretize the model
 % sys_disc = c2d(sys_cont,Ts,'zoh');
@@ -59,7 +59,7 @@ sys_disc = linearize(model,op,io)
 % sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
 
 % Pick the system we want to use
-sys = sys_disc;
+sys = sys;
 
 %% LQR Pole Placement
 % Find the poles
@@ -73,10 +73,10 @@ controllability = rank(co)
 Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([0.1 10000 90000 0 0])
-R = 1;
+Q = diag([0 10000 100000 0.6 0.1])
+R = 100;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[K,~,e] = dlqr(sys.A,sys.B,Q,R)
+[K,~,e] = lqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -93,37 +93,37 @@ outputs = {'theta1'; 'theta2'};
 %Precompensator
 Nbar = 1;
 
-sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
+sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
 impulse(sys_cl)
-
-%% Observer
-observability = rank(obsv(sys))
-
-% Check stability of system with state feedback
-poles = eig(sys_cl)
-lambda = 0.1;
-
-% Place the poles
-P = [0.9 0.12 0.13 0.14 0.15];
-L = place(sys.A.',sys.C.',P).'
-
-% Controller
-Ace = [(sys.A-sys.B*K) (sys.B*K); zeros(size(sys.A)) (sys.A-L*sys.C)];
-Bce = [sys.B; zeros(size(sys.B))];
-Cce = [Cc zeros(size(Cc))];
-Dce = [0;0];
-
-sys_obs = ss(sys.A-L*sys.C,sys.B,sys.C,sys.D,Ts);
-
-
-states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'T_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
-inputs = {'torque'};
-outputs = {'theta1'; 'theta2'};
-
-sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
-
-impulse(sys_est_cl)
-impulse(sys_obs)
+grid on
+% % % Observer
+% % observability = rank(obsv(sys))
+% % 
+% % Check stability of system with state feedback
+% % poles = eig(sys_cl)
+% % lambda = 0.1;
+% % 
+% % Place the poles
+% % P = [0.9 0.12 0.13 0.14 0.15];
+% % L = place(sys.A.',sys.C.',P).'
+% % 
+% % Controller
+% % Ace = [(sys.A-sys.B*K) (sys.B*K); zeros(size(sys.A)) (sys.A-L*sys.C)];
+% % Bce = [sys.B; zeros(size(sys.B))];
+% % Cce = [Cc zeros(size(Cc))];
+% % Dce = [0;0];
+% % 
+% % sys_obs = ss(sys.A-L*sys.C,sys.B,sys.C,sys.D,Ts);
+% % 
+% % 
+% % states = {'theta1' 'theta2' 'theta1_dot' 'theta2_dot' 'T_dot' 'e1' 'e2' 'e3' 'e4' 'e5'};
+% % inputs = {'torque'};
+% % outputs = {'theta1'; 'theta2'};
+% % 
+% % sys_est_cl = ss(Ace,Bce,Cce,Dce,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
+% % 
+% % impulse(sys_est_cl)
+% % impulse(sys_obs)
 %% Simulate
 % t = 0:Ts:5;
 % r = 0.1*ones(size(t));
@@ -142,8 +142,8 @@ state.A = sys.a;
 state.B = sys.b;
 state.C = sys.c;
 state.D = sys.d;
-state.K = K./5;
-state.L = L;
+state.K = K;
+% state.L = L;
 state.h = Ts
 
 toModelWorkspace('visualize',state);
