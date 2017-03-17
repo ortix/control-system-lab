@@ -64,19 +64,19 @@ sys = sys_disc;
 %% LQR Pole Placement
 % Find the poles
 clf
-poles = eig(sys.A)
+poles = eig(sys.A);
 
 % Determine controlability
 co = ctrb(sys);
 controllability = rank(co)
 % LQR Designsys
-Q = sys.C'*sys.C
+Q = sys.C'*sys.C;
 
 %%%%% Optimize this %%%%%%%%%%
-Q = diag([0 10000 100000 0.6 0.1])
-R = 10000;
+Q = diag([1 10000 100000 100 1]);
+R = 50000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[K,~,e] = dlqr(sys.A,sys.B,Q,R)
+[K,~,e] = dlqr(sys.A,sys.B,Q,R);
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -146,6 +146,9 @@ state.K = K;
 % state.L = L;
 state.h = Ts;
 state.Ts = Ts;
+state.initial_state = params.initial_state;
+state.Q = Q;
+state.R = R;
 toModelWorkspace('visualize',state);
 addpath('plant')
 toModelWorkspace('rpend',state);
