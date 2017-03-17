@@ -1,24 +1,9 @@
 par = struct;
 par.g = 9.81;
-par.l1 = 0.1;
-par.l2 = 0.1;
 par.L1 = 1;
 par.L2 = 1.1;
-par.m1 = 0.125;
-par.m2 = 0.05;
-par.c1 = -0.04; %was 0.04 but is wrong
-par.c2 = 0.06;
-par.I1 = 0.074;
-par.I2 = 0.00012;
-par.b1 = 4.8;
-par.b2 =  0.00012;
-par.k_m = 20;
-par.tau_e = 0.03;
-par.P1 = par.m1*par.c1^2 + par.m2*par.l1^2 + par.I1;
-par.P2 = par.m2*par.c2^2 + par.I2;
-par.P3 = par.m2*par.l1*par.c2;
-par.g1 = (par.m1*par.c1 + par.m2*par.l1)*par.g;
-par.g2 = par.m2*par.c2*par.g;
+par.k_m = 41.0587;
+par.tau_e = 0.0312;
 
 g = par.g;
 L1 = par.L1;
