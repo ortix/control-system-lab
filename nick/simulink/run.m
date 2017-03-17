@@ -52,14 +52,14 @@ io(3) = linio('model_v2/Demux',2,'output');
 sys = linearize(model,op,io)
 
 % Discretize the model
-% sys_disc = c2d(sys_cont,Ts,'zoh');
+sys_disc = c2d(sys,Ts,'zoh');
 
 % Analytical linearization
 % sys_analytical = getLinearModel(params.initial_state)
 % sys_anl_disc = c2d(sys_analytical,Ts,'zoh');
 
 % Pick the system we want to use
-sys = sys;
+sys = sys_disc;
 
 %% LQR Pole Placement
 % Find the poles
@@ -74,9 +74,9 @@ Q = sys.C'*sys.C
 
 %%%%% Optimize this %%%%%%%%%%
 Q = diag([0 10000 100000 0.6 0.1])
-R = 100;
+R = 10000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[K,~,e] = lqr(sys.A,sys.B,Q,R)
+[K,~,e] = dlqr(sys.A,sys.B,Q,R)
 
 % Create new state space representation with full state feedback by
 % using K found with LQR
@@ -93,7 +93,7 @@ outputs = {'theta1'; 'theta2'};
 %Precompensator
 Nbar = 1;
 
-sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,'statename',states,'inputname',inputs,'outputname',outputs);
+sys_cl = ss(Ac,Bc*Nbar,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 impulse(sys_cl)
 grid on
 % % % Observer
@@ -144,8 +144,8 @@ state.C = sys.c;
 state.D = sys.d;
 state.K = K;
 % state.L = L;
-state.h = Ts
-
+state.h = Ts;
+state.Ts = Ts;
 toModelWorkspace('visualize',state);
 addpath('plant')
 toModelWorkspace('rpend',state);
