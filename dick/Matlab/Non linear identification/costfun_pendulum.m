@@ -1,7 +1,7 @@
 function e = costfun_pendulum(x,U,y)
 % cost function for nonlinear parameter tuning
 % When estimating the parameters for the first link:
-% x = [b1 k_m tau_e]
+% x = [I2 b2]
 
 % Assign x to simulink
 assignin('base','input_costfun',x);
@@ -18,4 +18,5 @@ e = y(1:1500,2)-ym(1:1500,2);                               % residual (error)
 
 % you can comment the below line to speed up
 figure(1); stairs(tm,[y ym]);           % intermediate fit
+drawnow();
 %pause

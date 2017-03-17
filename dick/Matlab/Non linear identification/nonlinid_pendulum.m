@@ -60,14 +60,14 @@ switch input
         U = step_input.ans.Data;
         y = step_output.ans.Data;
     case 'swing'
-        swing_input  = load('input_swing');
-        swing_output = load('output_swing2');
+        swing_input  = load('input_swing3');
+        swing_output = load('output_swing3');
         time = swing_input.ans.Time;
         h = diff(time(1:2));
         U = swing_input.ans.Data;
         y = swing_output.ans.Data;
         % Shift the output data to correspond to the simulation data
-        n = max(find(y(:,2)<0));
+        n = max(find(y(:,2)>0.5*pi));
         y = y(n:end,:);
         index = length(y);
        
@@ -85,6 +85,7 @@ figure(2); p1 = plot(time,y(:,1)); p2 = plot(time,y(:,2)); hold on;
 xlabel('Time [sec]')
 ylabel('angle [rad]')
 title('Output of the real system and the simulation model for the same input')
+
 %% Non linear parameter estimation
 % % When estimating parameters of the first link: 
 % % initial guess: [b1 b2 k_m tau_e]
@@ -102,13 +103,13 @@ b2 = 2*zeta*w_n;
 
 % When estimating parameters of the first link:
 % initial guess: [l2 m2 c2 I2 b2]
-parameters_initial_guess = [0.1 0.05 0.06 0.000012 0.00002].';   % initial guess
+parameters_initial_guess = [0.00012 0.0002].';   % initial guess
 
 k_m = 50;
 tau_e = 0.3;
 % Fill in initial guess. Link 1: x0 = [pi 0 0 0 0]
                        % Link 2: x0 = [0.5*pi 0 0 0 0]
-x0 =[0.5*pi+0.001 -0.001 0 0 0];
+x0 =[pi 0.5*pi 0 0 0];
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % design input excitation signal
@@ -123,7 +124,7 @@ x0 =[0.5*pi+0.001 -0.001 0 0 0];
 % data collection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % assignin('base','k_m',k_m)
-% sim('Pendulum_model_nlsysid',30);     % ouput data available in y
+% sim('Pendulum_model_nlsysid',25);     % ouput data available in y
 % 
 % figure(2); p3 = plot(U(:,1),y(:,1)); p4 = plot(U(:,1),y(:,2));
 % legend([p1,p2,p3,p4],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model')
@@ -131,7 +132,7 @@ x0 =[0.5*pi+0.001 -0.001 0 0 0];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % nonlinear optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-lb = [0 0 -0.1 0 0]; up = [];
-OPT = optimoptions(@lsqnonlin,'MaxIterations',15,'StepTolerance',1e-6);
+lb = [0 0]; up = [0.0012 0.0002];
+OPT = optimoptions(@lsqnonlin,'MaxIterations',25,'StepTolerance',1e-6);
 [xhat,fval]= lsqnonlin('costfun_pendulum',parameters_initial_guess,lb,up,OPT,U,y);
 [parameters_initial_guess xhat], fval
