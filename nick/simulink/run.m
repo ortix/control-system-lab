@@ -49,10 +49,10 @@ io(2) = linio('model_v2/Demux',1,'output');
 io(3) = linio('model_v2/Demux',2,'output');
 
 % Linearize the model
-sys = linearize(model,op,io)
+sys_cont = linearize(model,op,io)
 
 % Discretize the model
-sys_disc = c2d(sys,Ts,'zoh');
+sys_disc = c2d(sys_cont,Ts,'zoh');
 
 % Analytical linearization
 % sys_analytical = getLinearModel(params.initial_state)
