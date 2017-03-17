@@ -9,7 +9,7 @@ params.initial_state = [0 0]; % Pendulum is vertical (up up)
 params.torque = 0; % Input torque
 params.sim_time = 10;
 params.torque_bypass = 0; % Set to 0 to filter torque
-Ts = 1/100;
+Ts = 1/75;
 params.Ts = Ts;    
 params.h = Ts;
 % Controller parameters
