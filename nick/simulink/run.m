@@ -3,7 +3,6 @@ clear;clc;
 %% Open up the system
 model = 'visualize';
 load_system(model);
-
 %% Define extra parameters for model
 params.initial_state = [0 0]; % Pendulum is vertical (up up)
 params.torque = 0; % Input torque
@@ -12,29 +11,16 @@ params.torque_bypass = 0; % Set to 0 to filter torque
 Ts = 1/100;
 params.Ts = Ts;    
 params.h = Ts;
-% Controller parameters
-params.Kp = 0 ;
-params.Kd = 0;
-params.Ki = 0;
 %% Initialize parameters and states
-hws = get_param(model, 'modelworkspace');
 
-% Load model parameters into workspace from m file as a struct
-hws.DataSource = 'Matlab File';
-hws.FileName = 'par_struct.m';
-hws.reload;
-
+% Load states into model
 toModelWorkspace('visualize',params);
 toModelWorkspace('model_v2',params);
 
-% %% Linear model
-% load_system('linear_model');
-% hws = get_param(bdroot, 'modelworkspace');
-% hws.assignin('A',sys.A);
-% hws.assignin('B',sys.B);
-% hws.assignin('C',sys.C);
-% hws.assignin('D',sys.D);
-% 
+% Load parameters into model
+data = load('params.mat');
+toModelWorkspace('visualize',data);
+toModelWorkspace('model_v2',data);
 
 %% Linearization
 model = 'model_v2';
