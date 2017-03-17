@@ -34,8 +34,9 @@ addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Crested Mul
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\GBN')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Step')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Swing')
+addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Impulse')
 
-input = 'swing';
+input = 'impulse';
 
 switch input
     case 'GBN'
@@ -53,12 +54,25 @@ switch input
         U = multisine_input.ans.Data;
         y = multisine_output.ans.Data;
     case 'step'
-        step_input  = load('step_input1');
-        step_output = load('step_output1');
+        step_input  = load('input_step_v2');
+        step_output = load('output_step_v2');
         time = step_input.ans.Time;
         h = diff(time(1:2));
         U = step_input.ans.Data;
         y = step_output.ans.Data;
+        % Process data from theta1
+        n = find(diff(y(:,1)>4));
+        y(n(1)+1:end,1) = y(n(1)+1:end,1) - 2*pi; 
+        % Process data from theta2
+        n = find(diff(y(:,2)>4));
+        y(n(2)+1:end,2) = y(n(2)+1:end,2) + 2*pi;
+    case 'impulse'
+        impulse_input  = load('input_impulse_v2');
+        impulse_output = load('output_impulse_v2');
+        time = impulse_input.ans.Time;
+        h = diff(time(1:2));
+        U = impulse_input.ans.Data;
+        y = impulse_output.ans.Data;
     case 'swing'
         swing_input  = load('input_swing3');
         swing_output = load('output_swing3');
@@ -81,15 +95,15 @@ end
 
 % U should be timeseries
 U = [time U];
-figure(2); p1 = plot(time,y(:,1)); p2 = plot(time,y(:,2)); hold on;
+figure(2); p1 = plot(time,y(:,1));  p2 = plot(time,y(:,2)); hold on;
 xlabel('Time [sec]')
 ylabel('angle [rad]')
 title('Output of the real system and the simulation model for the same input')
 
 %% Non linear parameter estimation
-% % When estimating parameters of the first link: 
-% % initial guess: [b1 b2 k_m tau_e]
-% parameters_initial_guess = [4.8 0.0002 50 0.3].';   % initial guess
+% When estimating parameters of the first link: 
+% initial guess: [I1 b1 I2 b2 k_m tau_e]
+parameters_initial_guess = [0.074 4.8 1e-4*0.8857 1e-4*0.5459 50 0.3].';   % initial guess
 
 % Calculate damping term b2 from data
 [x_max1, ind1] = max(y(1:50,2));
@@ -102,14 +116,14 @@ b2 = 2*zeta*w_n;
 
 
 % When estimating parameters of the first link:
-% initial guess: [l2 m2 c2 I2 b2]
-parameters_initial_guess = [0.00012 0.0002].';   % initial guess
+% initial guess: [I2 b2]
+% parameters_initial_guess = [0.00012 0.0002].';   % initial guess
 
 k_m = 50;
 tau_e = 0.3;
 % Fill in initial guess. Link 1: x0 = [pi 0 0 0 0]
                        % Link 2: x0 = [0.5*pi 0 0 0 0]
-x0 =[pi 0.5*pi 0 0 0];
+x0 =[pi 0 0 0 0];
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % design input excitation signal
@@ -124,7 +138,7 @@ x0 =[pi 0.5*pi 0 0 0];
 % data collection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % assignin('base','k_m',k_m)
-% sim('Pendulum_model_nlsysid',25);     % ouput data available in y
+% sim('Pendulum_model_nlsysid',20);     % ouput data available in y
 % 
 % figure(2); p3 = plot(U(:,1),y(:,1)); p4 = plot(U(:,1),y(:,2));
 % legend([p1,p2,p3,p4],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model')
@@ -132,7 +146,11 @@ x0 =[pi 0.5*pi 0 0 0];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % nonlinear optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-lb = [0 0]; up = [0.0012 0.0002];
+lb = [0 0 0 0 0 0]; up = [0.2 10 1e-2 1e-2 50 1];
 OPT = optimoptions(@lsqnonlin,'MaxIterations',25,'StepTolerance',1e-6);
 [xhat,fval]= lsqnonlin('costfun_pendulum',parameters_initial_guess,lb,up,OPT,U,y);
 [parameters_initial_guess xhat], fval
+% figure(1); legend('Real data','Fitted data')
+% title('Parameter estimation of I_2 and b_2')
+% xlabel('time [sec]')
+% ylabel('angle [rad]')

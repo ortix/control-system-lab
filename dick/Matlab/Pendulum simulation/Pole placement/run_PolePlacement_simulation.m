@@ -27,8 +27,8 @@ switch button
         file = 'PolePlacement_control_model_continuous';
         
         %% Pole placement controller
-        Overshoot = 0.05;   % 5 percent
-        t_set = 1.5;          % 0.7 was too fast
+        Overshoot = 0.03;   % 5 percent
+        t_set = 0.7;          % 0.7 was too fast
         zeta = -log(Overshoot)/(sqrt(pi^2 + log(Overshoot)^2));
         omega = 5/(zeta*t_set);
         syms s 
@@ -36,8 +36,8 @@ switch button
         poles = double(solve(equation,s));
         alpha = 5;
         lambdas = [poles(1) poles(2) real(poles(1))*alpha real(poles(1))*alpha-0.01 real(poles(1))*alpha+0.01];
-        K = place(G_with_torque.a, G_with_torque.b,lambdas);
-        eig(G_with_torque.a - G_with_torque.b*K)
+        K = place(G.a, G.b,lambdas);
+        eig(G.a - G.b*K)
         
         %% Build the observer
         % Observer gain should at least be ten times as fast as the slowest
@@ -49,13 +49,13 @@ switch button
         syms s 
         equation = s^2 + 2*zeta*omega*s + omega^2 == 0;
         poles = double(solve(equation,s));
-        alpha = 5;
+        alpha = 7;
         lambdas = [poles(1) poles(2) real(poles(1))*alpha real(poles(1))*alpha-0.01 real(poles(1))*alpha+0.01];
         L = place(G_with_torque.a.', G_with_torque.c.',lambdas).';
         eig(G_with_torque.a - L*G_with_torque.c)
         
         %% Running the simulation
-        x0 = [0.1; 0.1; 0; 0; 0];
+        x0 = [0; 0; 0; 0; 0];
         states = Simulink.BlockDiagram.getInitialState(file);
         theta1 = 0.1; theta2 = 0;
         states.signals(3).values = theta1;          % Initial state theta1 for visualizer
