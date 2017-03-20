@@ -33,6 +33,7 @@ jac_state = [theta1; theta2; theta1dot; theta2dot; Torquedot];
 linearized_sys = [0 0 1 0 0; 0 0 0 1 0; jacobian(theta1ddot_solved,jac_state); jacobian(theta2ddot_solved,jac_state)];
 jac_equation2 = jacobian(theta2ddot_solved,jac_state);
 
+% New parameters found through parameter estimation
 g = 9.81; 
 l1 = 0.1;
 l2 = 0.1;

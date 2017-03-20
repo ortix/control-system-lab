@@ -20,7 +20,6 @@ params;
 % h2 = 0.0429;                        % Based on wc = 3.5
 h3 = 0.01;
 
-
 button = questdlg('Which model do you want to run?', 'Choose model','Continuous','Discrete','Continuous');
 switch button
     case 'Continuous'
