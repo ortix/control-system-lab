@@ -1,5 +1,6 @@
 %%% Rotational Pendulum
 clear;clc;
+cool_text
 %% Open up the system
 model = 'visualize';
 load_system(model);
@@ -82,10 +83,9 @@ inputs = {'torque'};
 outputs = {'theta1'; 'theta2'};
 
 sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
-impulse(sys_cl)
+% impulse(sys_cl)
 grid on
 %% Save the state matrices
-
 state.A = sys.a;
 state.B = sys.b;
 state.C = sys.c;
@@ -99,3 +99,42 @@ state.R = R;
 toModelWorkspace('visualize',state);
 addpath('plant')
 toModelWorkspace('rpend',state);
+
+%% Simulate
+disp('Running simulation...');
+evalc('sim(''visualize'')');
+disp('Simulation complete!');
+
+%% Plot graphs
+disp('Creating pretty graphs')
+% Theta1
+subplot(3,1,1);hold on;grid on;
+plot(yhat.time,yhat.Data(:,1))
+plot(yhat.time,yhat.Data(:,3),'LineWidth',1)
+title('Theta 1 angle')
+ylabel('amplitude [rad]');xlabel('time [s]')
+
+%Theta2
+subplot(3,1,2);hold on; grid on;
+plot(yhat.time,yhat.Data(:,2))
+plot(yhat.time,yhat.Data(:,4),'LineWidth',1)
+title('Theta 2 angle')
+ylabel('amplitude [rad]');xlabel('time [s]')
+
+% Disturbance
+subplot(3,1,3);hold on; grid on;
+plot(disturbance.time,disturbance.Data(:,2),'LineWidth',1)
+title('Disturbance')
+ylabel('amplitude [rad]');xlabel('time [s]')
+saveas(gcf,'../presentation/img/disturbance_effect','png');
+
+% Torque
+figure;
+plot(torque,'linewidth',0.7);
+grid on;
+ylim([-1 1])
+saveas(gcf,'../presentation/img/torque','png');
+
+disp('I can haz good grade?')
+
+
