@@ -1,5 +1,5 @@
 %%% Rotational Pendulum
-clear;clc;
+clear;clc;close all
 %% Open up the system
 model = 'visualize';
 load_system(model);
@@ -107,16 +107,17 @@ disp('Simulation complete!');
 %% Plot graphs
 disp('Creating pretty graphs')
 % Theta1
+figure('units','normalized','position',[0.1 0.1 .7 0.7]);
 subplot(3,1,1);hold on;grid on;
-plot(yhat.time,yhat.Data(:,1))
-plot(yhat.time,yhat.Data(:,3),'LineWidth',1)
+plot(yhat.time,yhat.Data(:,1),'linewidth',1)
+plot(yhat.time,yhat.Data(:,3),'linewidth',1)
 title('Theta 1 angle')
 ylabel('amplitude [rad]');xlabel('time [s]')
 
 %Theta2
 subplot(3,1,2);hold on; grid on;
-plot(yhat.time,yhat.Data(:,2))
-plot(yhat.time,yhat.Data(:,4),'LineWidth',1)
+plot(yhat.time,yhat.Data(:,2),'linewidth',1)
+plot(yhat.time,yhat.Data(:,4),'linewidth',1)
 title('Theta 2 angle')
 ylabel('amplitude [rad]');xlabel('time [s]')
 
@@ -128,8 +129,11 @@ ylabel('amplitude [rad]');xlabel('time [s]')
 saveas(gcf,'../presentation/img/disturbance_effect','png');
 
 % Torque
-figure;
+figure('units','normalized','position',[0.3 0.3 .4 0.3]);
 plot(torque,'linewidth',0.7);
+title('Control Effort')
+xlabel('time [s]')
+ylabel('torque [N]')
 grid on;
 ylim([-1 1])
 saveas(gcf,'../presentation/img/torque','png');
