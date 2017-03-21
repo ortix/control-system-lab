@@ -45,8 +45,9 @@ sys_disc = c2d(sys_cont,Ts,'zoh');
 % Pick the system we want to use
 sys = sys_disc;
 
-%% LQR Pole Placement
+%% Check controllability
 disp('Checking controllability');
+
 % Find the poles
 clf
 poles = eig(sys.A);
@@ -59,6 +60,12 @@ if(controllability == length(sys.b))
 else
     error('System is not controllable')
 end
+
+controller = questdlg('Which controller do you want to use?','Choose controller','LQR controller','Pole placement controller','LQR controller');
+
+switch controller
+    case 'LQR controller'
+%% LQR Pole Placement
 % LQR Designsys
 Q = sys.C'*sys.C;
 
@@ -84,6 +91,27 @@ outputs = {'theta1'; 'theta2'};
 sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 % impulse(sys_cl)
 grid on
+
+    case 'Pole placement controller'
+%% Pole placement controller 
+disp('Calculating pole placement poles');
+% poles = [0 0.7673+0.0563i 0.7673-0.0563i 0.9454 0.9195]; % Correct poles from LQR controller
+overshoot = 0.05;
+t_set = 0.7;
+zeta = -log(overshoot)/(sqrt(pi^2 + log(overshoot)^2));
+omega = 4.6/(zeta*t_set);
+p1 = -2*exp(-2*zeta*omega*Ts)*cos(omega*Ts*sqrt(1-zeta^2));
+p2 = exp(-2*zeta*omega*Ts);
+
+syms s
+equation = s^2 + p1*s + p2 == 0;
+poles = double(solve(equation,s));
+alpha = 0.25;
+lambdas = [0 poles(1) poles(2) 0.001+real(poles(1))^alpha -0.001+real(poles(1))^alpha];   % [torque theta1 theta2 theta1dot theta2dot]
+lambdas
+K = place(sys.A,sys.B,lambdas);
+end
+
 %% Save the state matrices
 state.A = sys.a;
 state.B = sys.b;
@@ -93,12 +121,14 @@ state.K = K;
 state.h = Ts;
 state.Ts = Ts;
 state.initial_state = params.initial_state;
+if strcmp(controller,'LQR controller') 
 state.Q = Q;
 state.R = R;
+end
 toModelWorkspace('visualize',state);
 addpath('plant')
 toModelWorkspace('rpend',state);
-
+return
 %% Simulate
 disp('Running simulation...');
 evalc('sim(''visualize'')');
