@@ -1,6 +1,5 @@
 %%% Rotational Pendulum
 clear;clc;
-cool_text
 %% Open up the system
 model = 'visualize';
 load_system(model);
