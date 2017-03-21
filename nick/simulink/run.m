@@ -64,7 +64,7 @@ Q = sys.C'*sys.C;
 
 %%%%% Optimize this %%%%%%%%%%
 Q = diag([1 10000 100000 100 1]);
-R = 50000;
+R = 90000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Calculating LQR poles');
 [K,~,e] = dlqr(sys.A,sys.B,Q,R);
@@ -84,6 +84,26 @@ outputs = {'theta1'; 'theta2'};
 sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 impulse(sys_cl)
 grid on
+
+%% Observer
+Kw_1 = 0.01;
+Kw_2 = 0.01;
+alpha = 2;
+zeta = 2;
+t_set = 0.2;
+h = Ts;
+w = 4.6/(zeta*t_set)*alpha;       % settling time of 8 seconds
+p1 = -2*exp(-2*zeta*w*h)*cos(w*h*sqrt(1-zeta^2));
+p2 = exp(-2*zeta*w*h);
+syms s
+b = s^2 + p1*s + p2;
+lambda = solve(b,s);
+lambda = single(lambda);
+observer_poles = [real(lambda(1)) real(lambda(2)) real(lambda(1))^alpha -0.01+real(lambda(1))^alpha 0.01+real(lambda(1))^alpha];
+L = place(sys_disc.a',sys_disc.c',observer_poles)';
+closedloop = sys_disc.a - L*sys_disc.c;
+eig(closedloop)
+return
 %% Save the state matrices
 
 state.A = sys.a;
@@ -98,4 +118,5 @@ state.Q = Q;
 state.R = R;
 toModelWorkspace('visualize',state);
 addpath('plant')
-toModelWorkspace('rpend',state);
+% toModelWorkspace('rpend',state);
+toModelWorkspace('rpend_observer',state)
