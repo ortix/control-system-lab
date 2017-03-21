@@ -64,7 +64,7 @@ Q = sys.C'*sys.C;
 
 %%%%% Optimize this %%%%%%%%%%
 Q = diag([1 10000 100000 100 1]);
-R = 50000;
+R = 60000;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Calculating LQR poles');
 [K,~,e] = dlqr(sys.A,sys.B,Q,R);
