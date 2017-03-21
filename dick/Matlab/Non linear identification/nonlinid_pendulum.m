@@ -36,7 +36,7 @@ addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Step')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Swing')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Impulse')
 
-input = 'impulse';
+input = 'step';
 
 switch input
     case 'GBN'
@@ -95,7 +95,7 @@ end
 
 % U should be timeseries
 U = [time U];
-figure(2); p1 = plot(time,y(:,1));  p2 = plot(time,y(:,2)); hold on;
+figure(2); plot_figure; p1 = plot(time,y(:,1));  p2 = plot(time,y(:,2)); hold on;
 xlabel('Time [sec]')
 ylabel('angle [rad]')
 title('Output of the real system and the simulation model for the same input')
@@ -137,12 +137,13 @@ x0 =[pi 0 0 0 0];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % data collection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% assignin('base','k_m',k_m)
-% sim('Pendulum_model_nlsysid',20);     % ouput data available in y
-% 
-% figure(2); p3 = plot(U(:,1),y(:,1)); p4 = plot(U(:,1),y(:,2));
-% legend([p1,p2,p3,p4],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model')
+assignin('base','k_m',k_m)
+sim('Pendulum_model_nlsysid',20);     % ouput data available in y
 
+figure(2); p3 = plot(U(:,1),y(:,1)); p4 = plot(U(:,1),y(:,2)); p5 = plot(U(:,1),U(:,2));
+legend([p1,p2,p3,p4,p5],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model','Input signal')
+
+return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % nonlinear optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

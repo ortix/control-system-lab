@@ -101,12 +101,12 @@ switch button
         
         
          %% LQR controller
-%         Q = diag([1 80000 0 0 1]);
-%         R = 10000;
-%         N = [0;0;0;0;0];
-%         
-%         [K,S,e] = dlqr(discr_sys.a,discr_sys.b,Q,R,N);
-%         closedloop = discr_sys.a - discr_sys.b*K;
+        Q = diag([1 80000 0 0 1]);
+        R = 10000;
+        N = [0;0;0;0;0];
+        
+        [K,S,e] = dlqr(discr_sys.a,discr_sys.b,Q,R,N);
+        closedloop = discr_sys.a - discr_sys.b*K;
         
         %% Observer
         alpha = 5;
