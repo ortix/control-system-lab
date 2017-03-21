@@ -11,7 +11,7 @@ hwinit;
 
 generate_step;
 
-sim('rpend',20)
+sim('rpend_dick',20)
 
         time = U(:,1);
         U = U(:,2);
