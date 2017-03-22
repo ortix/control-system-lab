@@ -90,8 +90,7 @@ outputs = {'theta1'; 'theta2'};
 
 sys_cl = ss(Ac,Bc,Cc,Dc,Ts,'statename',states,'inputname',inputs,'outputname',outputs);
 % impulse(sys_cl)
-grid on
-
+Kff = 1.05;
     case 'Pole placement controller'
 %% Pole placement controller 
 disp('Calculating pole placement poles');
@@ -110,6 +109,7 @@ alpha = 0.25;
 lambdas = [0 poles(1) poles(2) 0.001+real(poles(1))^alpha -0.001+real(poles(1))^alpha];   % [torque theta1 theta2 theta1dot theta2dot]
 lambdas
 K = place(sys.A,sys.B,lambdas);
+Kff = 0.75;
 end
 
 %% Save the state matrices

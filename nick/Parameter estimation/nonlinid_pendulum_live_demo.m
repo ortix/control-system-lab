@@ -24,11 +24,11 @@ sim('rpend_dick',20)
         y = y(1:length(time),:);
 % U should be timeseries
 U = [time U];
-figure(2); p1 = plot(time,y(:,1)); hold on; p2 = plot(time,y(:,2)); 
-xlabel('Time [sec]')
-ylabel('angle [rad]')
-title('Output of the real system and the simulation model for the same input')
-
+% figure(2); p1 = plot(time,y(:,1)); hold on; p2 = plot(time,y(:,2)); 
+% xlabel('Time [sec]')
+% ylabel('angle [rad]')
+% title('Output of the real system and the simulation model for the same input')
+% 
 %% Non linear parameter estimation
 % When estimating parameters of the first link: 
 % initial guess: [I1 b1 I2 b2 k_m tau_e]
@@ -80,6 +80,6 @@ OPT = optimoptions(@lsqnonlin,'MaxIter',25);
 [xhat,fval]= lsqnonlin('costfun_pendulum',parameters_initial_guess,lb,up,OPT,U,y);
 [parameters_initial_guess xhat], fval
 figure(1); % legend('Real data','Fitted data')
-title('Parameter estimation of I_2 and b_2')
+title('Parameter estimation of link 1')
 xlabel('time [sec]')
 ylabel('angle [rad]')
