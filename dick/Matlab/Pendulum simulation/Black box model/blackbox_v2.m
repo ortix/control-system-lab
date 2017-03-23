@@ -88,7 +88,7 @@ end
 
 data1 = iddata(y_CCW(:,2),U_CCW,h);
 nb = [2]; nf = [5]; nk = [1];
-OE_theta2 = oe(data1,[nb nf nk]);  figure(3); compare(data1,OE_theta2);
+OE_theta2 = oe(data1,[nb nf nk]);  figure(3); compare(data1,OE_theta2,'--');
 
 % %% Putting the OE models to continuous time and a tf 
 OE_tf_CCW = tf(d2c(OE_theta2)); 
@@ -190,7 +190,7 @@ end
 %% Estimation of OE model, OE because we have white measurement noise which is  filtered. Hence no Armax. OE also gives better fit
 data1 = iddata(y_CW(:,2),U_CW,h);
 nb = [2]; nf = [5]; nk = [1];
-OE_theta2 = oe(data1,[nb nf nk],'OutputName','Theta(2)');  figure(6); plot_figure; compare(data1,OE_theta2);
+OE_theta2 = oe(data1,[nb nf nk],'OutputName','Theta(2)');  figure(6); plot_figure; compare(data1,OE_theta2,'--');
 
 %% Putting the OE models to continuous time and a tf 
 OE_tf_CW = tf(d2c(OE_theta2)); 
@@ -238,8 +238,8 @@ U = [h*(0:T/h)' gbn(T,ts,A,h,1)];
 figure(7)
 plot_figure;
 subplot(2,1,1)
-lsim(OE_ss_CW,U(:,2),U(:,1))
+lsim(OE_ss_CW,U(:,2),U(:,1),'--')
 title('Response of the black box model on a GBN input')
 subplot(2,1,2)
-lsim(G_with_torque(2),-U(:,2),U(:,1))
+lsim(G_with_torque(2),U(:,2),U(:,1),'--')
 title('Response of the linearised model on a GBN input')

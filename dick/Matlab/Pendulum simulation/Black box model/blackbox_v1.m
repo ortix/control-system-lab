@@ -27,7 +27,7 @@ y = GBN_output.ans.Data;
 %% Estimation of OE model, OE because we have white measurement noise which is  filtered. Hence no Armax. OE also gives better fit
 data1 = iddata(y(:,2),U,h);
 nb = [4]; nf = [5]; nk = [1];
-OE11 = oe(data1,[nb nf nk], 'OutputName', 'Theta(2)'); figure(1); plot_figure; compare(data1,OE11);
+OE11 = oe(data1,[nb nf nk], 'OutputName', 'Theta(2)'); figure(1); plot_figure; compare(data1,OE11,'--');
 
 %% Putting the OE models to continuous time and a tf 
 OE_tf = tf(d2c(OE11)); 
