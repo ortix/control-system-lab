@@ -36,7 +36,7 @@ addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Step')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Swing')
 addpath('C:\Users\Dick\Documents\GitHub\control-system-lab\dick\Data\Impulse')
 
-input = 'swing';
+input = 'step';
 
 switch input
     case 'GBN'
@@ -130,7 +130,9 @@ k_m = 50;
 tau_e = 0.3;
 % Fill in initial guess. Link 1: x0 = [pi 0 0 0 0]
                        % Link 2: x0 = [pi 0.5*pi 0 0]
-x0 = [pi 0.5*pi 0 0 0];
+
+                       x0 = [pi 0 0 0 0];
+                       % x0 = [pi 0.5*pi 0 0 0];
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % design input excitation signal
@@ -145,13 +147,13 @@ x0 = [pi 0.5*pi 0 0 0];
 % data collection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % new values for k_m and tau_e
-% k_m = 41.0587; tau_e = 0.0312;
-% assignin('base','k_m',k_m); assignin('base','tau_e',tau_e)
-% sim('Pendulum_model_nlsysid',20);     % ouput data available in y
-% 
-% figure(2); p3 = plot(U(1:10:end,1),y(1:10:end,1),'k^'); p4 = plot(U(1:10:end,1),y(1:10:end,2),'kx'); p5 = plot(U(:,1),U(:,2),'k','MarkerSize',1);
-% legend([p1,p2,p3,p4,p5],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model','Input signal')
+k_m = 41.0587; tau_e = 0.0312;
+assignin('base','k_m',k_m); assignin('base','tau_e',tau_e)
+sim('Pendulum_model_nlsysid',20);     % ouput data available in y
 
+figure(2); p3 = plot(U(1:10:end,1),y(1:10:end,1),'k^'); p4 = plot(U(1:10:end,1),y(1:10:end,2),'kx'); p5 = plot(U(:,1),U(:,2),'k','MarkerSize',1);
+legend([p1,p2,p3,p4,p5],'theta1 real system','theta2 real system','theta1 simulation model','theta2 simulation model','Input signal')
+return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % nonlinear optimization
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
