@@ -126,7 +126,7 @@ observability = rank(obsv(sys));
 
 % Check stability of system with state feedback
 poles = eig(sys_cl)
-lambda = max(poles)/10;
+lambda = max(poles)/4;
 
 % Place the poles
 P = [0 lambda+0.001 lambda+0.002 lambda+0.003 lambda+0.004]
@@ -163,7 +163,7 @@ end
 toModelWorkspace('visualize',state);
 
 toModelWorkspace('rpend',state);
-
+return
 %% Simulate
 % LQR controller has to be calculated before simulation can run
 if(~exist('runflag','var'))
